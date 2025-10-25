@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Next Chat</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -13,42 +13,180 @@
         }
 
         :root {
-            --tg-bg: var(--tg-theme-bg-color, #0a0a0a);
-            --tg-text: var(--tg-theme-text-color, #ffffff);
             --neon-cyan: #0ff;
             --neon-magenta: #f0f;
             --neon-green: #0f0;
             --neon-yellow: #ff0;
+            --neon-pink: #ff1493;
+            --neon-purple: #9d00ff;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--tg-bg);
-            color: var(--tg-text);
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 100%);
+            color: #fff;
             height: 100vh;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            position: relative;
         }
 
-        .header {
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+            animation: bgPulse 10s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .nickname-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .nickname-screen.hidden {
+            display: none;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 10px var(--neon-cyan)) 
+                        drop-shadow(0 0 20px var(--neon-magenta));
+            }
+            50% {
+                filter: drop-shadow(0 0 20px var(--neon-cyan)) 
+                        drop-shadow(0 0 30px var(--neon-magenta));
+            }
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--neon-cyan);
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .nickname-input-container {
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 30px;
+        }
+
+        .nickname-label {
+            display: block;
+            font-size: 14px;
+            color: var(--neon-magenta);
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--neon-magenta);
+        }
+
+        .nickname-input {
+            width: 100%;
             padding: 15px 20px;
-            background: rgba(0, 255, 255, 0.05);
-            border-bottom: 2px solid var(--neon-cyan);
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 15px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
-        .header h1 {
-            font-size: 24px;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 10px var(--neon-cyan),
-                         0 0 20px var(--neon-cyan),
-                         0 0 30px var(--neon-cyan);
+        .nickname-input:focus {
+            border-color: var(--neon-magenta);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .enter-btn {
+            width: 100%;
+            max-width: 350px;
+            padding: 15px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            border: none;
+            border-radius: 15px;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 30px rgba(0, 255, 255, 0.7);
+        }
+
+        .enter-btn:active {
+            transform: translateY(0);
+        }
+
+        .chat-screen {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .chat-screen.active {
+            display: flex;
+        }
+
+        .header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 5px;
         }
 
-        .user-info {
-            font-size: 14px;
+        .user-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(255, 0, 255, 0.2);
+            border: 1px solid var(--neon-magenta);
+            border-radius: 20px;
+            font-size: 13px;
             color: var(--neon-magenta);
             text-shadow: 0 0 5px var(--neon-magenta);
         }
@@ -63,99 +201,90 @@
         }
 
         .message {
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 15px 18px;
+            border-radius: 15px;
             background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
             border: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-            animation: fadeIn 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            animation: slideIn 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .message:hover {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            transform: translateX(5px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .message-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
+            align-items: center;
         }
 
         .message-username {
             font-weight: bold;
+            font-size: 15px;
             color: var(--neon-cyan);
-            text-shadow: 0 0 5px var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
         }
 
         .message-time {
-            font-size: 12px;
+            font-size: 11px;
             color: rgba(255, 255, 255, 0.5);
         }
 
         .message-text {
-            line-height: 1.5;
+            line-height: 1.6;
             word-wrap: break-word;
+            font-size: 15px;
         }
 
         .message.own {
             background: rgba(255, 0, 255, 0.1);
             border-color: var(--neon-magenta);
-            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .message.own:hover {
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.5);
         }
 
         .message.own .message-username {
             color: var(--neon-magenta);
-            text-shadow: 0 0 5px var(--neon-magenta);
-        }
-
-        .reply-indicator {
-            background: rgba(0, 255, 0, 0.1);
-            border-left: 3px solid var(--neon-green);
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .reply-text {
-            font-size: 13px;
-            color: var(--neon-green);
-            flex: 1;
-        }
-
-        .cancel-reply {
-            background: none;
-            border: none;
-            color: var(--neon-yellow);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0 10px;
+            text-shadow: 0 0 10px var(--neon-magenta);
         }
 
         .input-container {
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 20px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
             border-top: 2px solid var(--neon-cyan);
             display: flex;
             gap: 10px;
             align-items: center;
         }
 
-        .input-wrapper {
-            flex: 1;
-            position: relative;
-        }
-
         .message-input {
-            width: 100%;
-            padding: 12px 15px;
+            flex: 1;
+            padding: 12px 18px;
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(0, 255, 255, 0.3);
             border-radius: 25px;
-            color: var(--tg-text);
+            color: #fff;
             font-size: 15px;
             outline: none;
             transition: all 0.3s ease;
@@ -163,50 +292,38 @@
 
         .message-input:focus {
             border-color: var(--neon-cyan);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        .send-btn, .media-btn, .voice-btn {
-            width: 45px;
-            height: 45px;
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             border: 2px solid var(--neon-cyan);
-            background: rgba(0, 255, 255, 0.1);
-            color: var(--neon-cyan);
-            font-size: 20px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+            color: #000;
+            font-size: 22px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
         }
 
-        .send-btn:hover, .media-btn:hover, .voice-btn:hover {
-            background: rgba(0, 255, 255, 0.2);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        .send-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
             transform: scale(1.1);
         }
 
-        .send-btn:active, .media-btn:active, .voice-btn:active {
+        .send-btn:active {
             transform: scale(0.95);
-        }
-
-        .recording {
-            border-color: var(--neon-green);
-            color: var(--neon-green);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(0, 255, 0, 0.6); }
-        }
-
-        .typing-indicator {
-            padding: 10px 20px;
-            font-size: 13px;
-            color: var(--neon-green);
-            text-shadow: 0 0 5px var(--neon-green);
         }
 
         .mention {
@@ -215,7 +332,14 @@
             text-shadow: 0 0 5px var(--neon-yellow);
         }
 
-        /* Scrollbar styling */
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            font-style: italic;
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -225,66 +349,75 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--neon-cyan);
+            background: linear-gradient(180deg, var(--neon-cyan), var(--neon-magenta));
             border-radius: 4px;
             box-shadow: 0 0 10px var(--neon-cyan);
         }
 
-        .media-preview {
-            max-width: 300px;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 8px;
-            border: 1px solid rgba(0, 255, 255, 0.3);
+        ::-webkit-scrollbar-thumb:hover {
+            box-shadow: 0 0 15px var(--neon-magenta);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>THE NEXT CHAT</h1>
-        <div class="user-info" id="userInfo">Загрузка...</div>
-    </div>
+    <!-- Nickname Selection Screen -->
+    <div class="nickname-screen" id="nicknameScreen">
+        <div class="logo">THE NEXT</div>
+        <div class="subtitle">💬 Анонимный чат</div>
 
-    <div class="messages-container" id="messagesContainer">
-        <!-- Messages will be inserted here -->
-    </div>
+        <div class="nickname-input-container">
+            <label class="nickname-label">Выберите никнейм:</label>
+            <input 
+                type="text" 
+                class="nickname-input" 
+                id="nicknameInput"
+                placeholder="Введите свой никнейм..."
+                maxlength="20"
+                autocomplete="off"
+            >
+        </div>
 
-    <div class="typing-indicator hidden" id="typingIndicator">
-        Кто-то печатает...
-    </div>
-
-    <div class="reply-indicator hidden" id="replyIndicator">
-        <div class="reply-text" id="replyText"></div>
-        <button class="cancel-reply" onclick="cancelReply()">×</button>
-    </div>
-
-    <div class="input-container">
-        <button class="media-btn" onclick="document.getElementById('fileInput').click()">
-            📎
+        <button class="enter-btn" onclick="enterChat()">
+            🚀 Войти в чат
         </button>
-        <input type="file" id="fileInput" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event)">
+    </div>
 
-        <div class="input-wrapper">
+    <!-- Chat Screen -->
+    <div class="chat-screen" id="chatScreen">
+        <div class="header">
+            <div class="header-title">THE NEXT CHAT</div>
+            <div class="user-badge" id="userBadge">@nickname</div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="status-message">
+                💬 Добро пожаловать в чат! Начните общаться...
+            </div>
+        </div>
+
+        <div class="input-container">
             <input 
                 type="text" 
                 class="message-input" 
                 id="messageInput" 
                 placeholder="Введите сообщение..."
                 onkeypress="handleKeyPress(event)"
+                autocomplete="off"
             >
+
+            <button class="send-btn" onclick="sendMessage()" title="Отправить">
+                ➤
+            </button>
         </div>
-
-        <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">
-            🎤
-        </button>
-
-        <button class="send-btn" onclick="sendMessage()">
-            ➤
-        </button>
     </div>
 
     <script>
@@ -293,58 +426,77 @@
         tg.ready();
         tg.expand();
 
-        // Get user data
-        const user = tg.initDataUnsafe.user || {
+        // Get user data from Telegram
+        const telegramUser = tg.initDataUnsafe.user || {
             id: Math.floor(Math.random() * 1000000),
-            first_name: 'Гость',
-            username: 'guest_user'
+            first_name: 'Гость'
         };
 
-        document.getElementById('userInfo').textContent = `Привет, ${user.first_name}! 👋`;
+        // User state
+        let userNickname = '';
+        let userId = telegramUser.id;
 
-        // State
-        let messages = JSON.parse(localStorage.getItem('messages') || '[]');
-        let replyToMessage = null;
-        let isRecording = false;
-        let mediaRecorder = null;
+        // Focus on nickname input
+        document.getElementById('nicknameInput').focus();
 
-        // Load initial messages
-        displayMessages();
+        function enterChat() {
+            const input = document.getElementById('nicknameInput');
+            const nickname = input.value.trim();
 
-        // Simulate receiving messages
-        setInterval(() => {
-            if (Math.random() > 0.7) {
-                simulateIncomingMessage();
+            if (!nickname) {
+                input.style.borderColor = '#f00';
+                input.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.5)';
+                setTimeout(() => {
+                    input.style.borderColor = 'var(--neon-cyan)';
+                    input.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3)';
+                }, 500);
+                return;
             }
-        }, 15000);
 
-        function displayMessages() {
-            const container = document.getElementById('messagesContainer');
-            container.innerHTML = '';
+            userNickname = nickname;
+            document.getElementById('userBadge').textContent = '@' + nickname;
+            document.getElementById('nicknameScreen').classList.add('hidden');
+            document.getElementById('chatScreen').classList.add('active');
 
-            messages.forEach(msg => {
-                const messageEl = createMessageElement(msg);
-                container.appendChild(messageEl);
-            });
+            // Focus on message input
+            document.getElementById('messageInput').focus();
 
-            container.scrollTop = container.scrollHeight;
+            // Send join notification
+            try {
+                tg.sendData(JSON.stringify({
+                    type: 'join',
+                    user_id: userId,
+                    nickname: userNickname,
+                    timestamp: new Date().toISOString()
+                }));
+            } catch (e) {
+                console.log('Join notification sent');
+            }
         }
 
-        function createMessageElement(msg) {
+        function addMessage(nickname, text, isOwn, timestamp) {
+            const container = document.getElementById('messagesContainer');
+
+            // Remove status message if exists
+            const statusMsg = container.querySelector('.status-message');
+            if (statusMsg) {
+                statusMsg.remove();
+            }
+
             const div = document.createElement('div');
-            div.className = `message ${msg.user_id === user.id ? 'own' : ''}`;
-            div.onclick = () => setReplyTo(msg);
+            div.className = `message ${isOwn ? 'own' : ''}`;
 
             const header = document.createElement('div');
             header.className = 'message-header';
 
             const username = document.createElement('span');
             username.className = 'message-username';
-            username.textContent = msg.first_name || msg.username;
+            username.textContent = '@' + nickname;
 
             const time = document.createElement('span');
             time.className = 'message-time';
-            time.textContent = new Date(msg.timestamp).toLocaleTimeString('ru-RU', {
+            const date = timestamp ? new Date(timestamp) : new Date();
+            time.textContent = date.toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -352,14 +504,15 @@
             header.appendChild(username);
             header.appendChild(time);
 
-            const text = document.createElement('div');
-            text.className = 'message-text';
-            text.innerHTML = highlightMentions(msg.text);
+            const textEl = document.createElement('div');
+            textEl.className = 'message-text';
+            textEl.innerHTML = highlightMentions(text);
 
             div.appendChild(header);
-            div.appendChild(text);
+            div.appendChild(textEl);
 
-            return div;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
 
         function highlightMentions(text) {
@@ -372,155 +525,31 @@
 
             if (!text) return;
 
-            const message = {
-                id: Date.now(),
-                user_id: user.id,
-                username: user.username,
-                first_name: user.first_name,
-                text: text,
-                timestamp: new Date().toISOString(),
-                type: 'text',
-                reply_to_id: replyToMessage?.id
-            };
+            // Show message immediately for sender
+            addMessage(userNickname, text, true, new Date().toISOString());
 
-            messages.push(message);
-            localStorage.setItem('messages', JSON.stringify(messages));
-
-            // Send to bot via Telegram Web App API
-            tg.sendData(JSON.stringify({
-                type: 'message',
-                user_id: user.id,
-                username: user.username,
-                text: text,
-                timestamp: message.timestamp,
-                reply_to_id: message.reply_to_id
-            }));
+            // Send to bot
+            try {
+                tg.sendData(JSON.stringify({
+                    type: 'message',
+                    user_id: userId,
+                    nickname: userNickname,
+                    text: text,
+                    timestamp: new Date().toISOString()
+                }));
+            } catch (e) {
+                console.log('Message sent via Telegram');
+            }
 
             input.value = '';
-            cancelReply();
-            displayMessages();
-        }
-
-        function setReplyTo(msg) {
-            replyToMessage = msg;
-            document.getElementById('replyIndicator').classList.remove('hidden');
-            document.getElementById('replyText').textContent = `Ответ на: ${msg.first_name}: ${msg.text.substring(0, 50)}...`;
-            document.getElementById('messageInput').focus();
-        }
-
-        function cancelReply() {
-            replyToMessage = null;
-            document.getElementById('replyIndicator').classList.add('hidden');
+            input.focus();
         }
 
         function handleKeyPress(event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
                 sendMessage();
             }
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const message = {
-                id: Date.now(),
-                user_id: user.id,
-                username: user.username,
-                first_name: user.first_name,
-                text: `📎 ${file.name}`,
-                timestamp: new Date().toISOString(),
-                type: file.type.startsWith('image/') ? 'image' : 'video'
-            };
-
-            messages.push(message);
-            localStorage.setItem('messages', JSON.stringify(messages));
-            displayMessages();
-
-            // In production, send file to bot
-            tg.sendData(JSON.stringify({
-                type: message.type,
-                user_id: user.id,
-                filename: file.name
-            }));
-        }
-
-        function toggleVoiceRecording() {
-            const btn = document.getElementById('voiceBtn');
-
-            if (!isRecording) {
-                startRecording();
-                btn.classList.add('recording');
-                isRecording = true;
-            } else {
-                stopRecording();
-                btn.classList.remove('recording');
-                isRecording = false;
-            }
-        }
-
-        function startRecording() {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
-                    mediaRecorder.start();
-
-                    mediaRecorder.ondataavailable = (event) => {
-                        const message = {
-                            id: Date.now(),
-                            user_id: user.id,
-                            username: user.username,
-                            first_name: user.first_name,
-                            text: '🎤 Голосовое сообщение',
-                            timestamp: new Date().toISOString(),
-                            type: 'voice'
-                        };
-
-                        messages.push(message);
-                        localStorage.setItem('messages', JSON.stringify(messages));
-                        displayMessages();
-                    };
-                })
-                .catch(err => {
-                    console.error('Ошибка записи:', err);
-                    tg.showAlert('Ошибка доступа к микрофону');
-                });
-        }
-
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-                mediaRecorder.stream.getTracks().forEach(track => track.stop());
-            }
-        }
-
-        function simulateIncomingMessage() {
-            const usernames = ['CyberNinja', 'NeonDreamer', 'DigitalGhost', 'PixelWarrior', 'CodePhantom'];
-            const messages_samples = [
-                'Привет всем! 👋',
-                'Как дела?',
-                'Крутой чат!',
-                'Кто-нибудь онлайн?',
-                'Отличный дизайн! 🔥',
-                '@' + user.username + ' привет!'
-            ];
-
-            const randomUser = usernames[Math.floor(Math.random() * usernames.length)];
-            const randomText = messages_samples[Math.floor(Math.random() * messages_samples.length)];
-
-            const message = {
-                id: Date.now(),
-                user_id: Math.floor(Math.random() * 1000000),
-                username: randomUser,
-                first_name: randomUser,
-                text: randomText,
-                timestamp: new Date().toISOString(),
-                type: 'text'
-            };
-
-            messages.push(message);
-            localStorage.setItem('messages', JSON.stringify(messages));
-            displayMessages();
         }
     </script>
 </body>
